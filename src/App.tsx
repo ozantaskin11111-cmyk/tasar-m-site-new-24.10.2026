@@ -164,15 +164,56 @@ function GlobalDefs() {
   return (
     <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
       <defs>
-        <filter id="balloon" x="-30%" y="-30%" width="160%" height="160%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" />
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" result="disp" />
-          <feGaussianBlur in="disp" stdDeviation="0.4" result="smooth" />
+        <linearGradient id="counterFloor" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#454039" />
+          <stop offset="0.5" stopColor="#b3ab9c" />
+          <stop offset="1" stopColor="#ece8df" />
+        </linearGradient>
+
+        <radialGradient id="latexBase" cx="0.37" cy="0.15" r="1.06">
+          <stop offset="0" stopColor="#fdfcf8" />
+          <stop offset="0.36" stopColor="#eeeae1" />
+          <stop offset="0.68" stopColor="#d8d0c0" />
+          <stop offset="1" stopColor="#c0b7a4" />
+        </radialGradient>
+
+        <filter id="balloon" x="-30%" y="-30%" width="160%" height="160%" colorInterpolationFilters="sRGB">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="gb" />
+          <feColorMatrix in="gb" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 13 -5.7" result="rGraphic" />
+          <feColorMatrix in="rGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="rAlpha" />
+          <feGaussianBlur in="rAlpha" stdDeviation="13" result="h" />
+          <feOffset in="rAlpha" dx="-20" dy="-24" result="aUL" />
+          <feComposite in="rAlpha" in2="aUL" operator="out" result="shA" />
+          <feComposite in="shA" in2="rAlpha" operator="in" result="shClip" />
+          <feGaussianBlur in="shClip" stdDeviation="11" result="shB" />
+          <feComposite in="shB" in2="rAlpha" operator="in" result="shClip2" />
+          <feFlood floodColor="#b6ac98" floodOpacity="0.62" result="shCol" />
+          <feComposite in="shCol" in2="shClip2" operator="in" result="shade" />
+          <feComponentTransfer in="h" result="coreTight">
+            <feFuncA type="table" tableValues="0 0 0 0 0.1 0.5 0.85 1" />
+          </feComponentTransfer>
+          <feComposite in="rAlpha" in2="coreTight" operator="out" result="seamA" />
+          <feComposite in="seamA" in2="rAlpha" operator="in" result="seamC" />
+          <feGaussianBlur in="seamC" stdDeviation="5" result="seamB" />
+          <feFlood floodColor="#9b9180" floodOpacity="0.34" result="seamCol" />
+          <feComposite in="seamCol" in2="seamB" operator="in" result="seam" />
+          <feOffset in="rAlpha" dx="16" dy="19" result="aDR" />
+          <feComposite in="rAlpha" in2="aDR" operator="out" result="hiA" />
+          <feComposite in="hiA" in2="rAlpha" operator="in" result="hiC" />
+          <feGaussianBlur in="hiC" stdDeviation="5" result="hiB" />
+          <feFlood floodColor="#ffffff" floodOpacity="0.95" result="hiCol" />
+          <feComposite in="hiCol" in2="hiB" operator="in" result="hi" />
           <feMerge>
-            <feMergeNode in="smooth" />
-            <feMergeNode in="SourceGraphic" opacity="0.3" />
+            <feMergeNode in="rGraphic" />
+            <feMergeNode in="shade" />
+            <feMergeNode in="seam" />
+            <feMergeNode in="hi" />
           </feMerge>
         </filter>
+
+        <filter id="b7" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="5" /></filter>
+        <filter id="b7mid" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2.4" /></filter>
+        <filter id="b7tight" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="1.1" /></filter>
       </defs>
     </svg>
   );
@@ -180,145 +221,165 @@ function GlobalDefs() {
 
 /* Crown swaying on letter T */
 function CrownHat() {
+  const [boop, setBoop] = useState(0);
   return (
-    <div className="crownHat" aria-hidden="true">
-      <svg className="crownSvg" width="60" height="42" viewBox="0 0 60 42" fill="none">
-        <path
-          d="M6 34 L12 12 L22 24 L30 6 L38 24 L48 12 L54 34 Z"
-          fill="none"
-          stroke="#4b63ff"
-          strokeWidth="4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <circle cx="12" cy="12" r="2.5" fill="#4b63ff" />
-        <circle cx="30" cy="6" r="2.5" fill="#4b63ff" />
-        <circle cx="48" cy="12" r="2.5" fill="#4b63ff" />
-      </svg>
+    <div
+      className="crownHat"
+      style={{
+        position: "absolute",
+        left: "50%",
+        top: "-7%",
+        width: "44%",
+        transform: "translateX(-50%)",
+        zIndex: 6,
+        cursor: "pointer",
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+        setBoop((b) => b + 1);
+        playBalloonPop(1.2, 0.4);
+      }}
+      aria-hidden="true"
+    >
+      <div className={boop ? "crownBoop" : undefined} key={boop}>
+        <svg viewBox="0 0 80 50" style={{ width: "100%", height: "auto", overflow: "visible" }}>
+          <g className="crownSway">
+            <path
+              className="drawPath"
+              d="M11 40 L22 15 L33 29 L40 9 L47 29 L58 15 L69 40 Q40 28 11 40"
+              stroke={BLUE}
+              strokeWidth="3.6"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <circle className="dotPop" cx="22" cy="15" r="3.3" fill={BLUE} />
+            <circle className="dotPop" cx="40" cy="9" r="3.5" fill={BLUE} />
+            <circle className="dotPop" cx="58" cy="15" r="3.3" fill={BLUE} />
+          </g>
+        </svg>
+      </div>
     </div>
   );
 }
 
-/* 3D Balloon Letters Definition for XENTORA */
-interface LetterDef {
-  ch: string;
-  w: number;
-  d: string;
-  crown?: boolean;
+function Doodle({ cls = "", w, h, style, children }: { cls?: string; w: number; h: number; style?: React.CSSProperties; children: React.ReactNode }) {
+  return (
+    <svg className={`doodleSvg ${cls}`} width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none" style={{ position: "absolute", pointerEvents: "none", overflow: "visible", ...style }}>
+      {children}
+    </svg>
+  );
 }
 
-const LETTERS: LetterDef[] = [
-  { ch: "X", w: 104, d: "M18 16 L44 54 L18 92 C16 95 19 98 24 98 L36 98 C40 98 44 95 47 91 L62 68 L77 91 C80 95 84 98 88 98 L100 98 C105 98 108 95 106 92 L80 54 L106 16 C108 13 105 10 100 10 L88 10 C84 10 80 13 77 17 L62 40 L47 17 C44 13 40 10 36 10 L24 10 C19 10 16 13 18 16 Z" },
-  { ch: "E", w: 86, d: "M22 10 L80 10 C84 10 87 13 87 17 L87 25 C87 29 84 32 80 32 L44 32 L44 44 L74 44 C78 44 81 47 81 51 L81 57 C81 61 78 64 74 64 L44 64 L44 76 L82 76 C86 76 89 79 89 83 L89 91 C89 95 86 98 82 98 L22 98 C17 98 14 94 14 90 L14 18 C14 14 17 10 22 10 Z" },
-  { ch: "N", w: 96, d: "M20 10 L34 10 C38 10 41 12 43 16 L72 66 L72 18 C72 14 75 10 80 10 L88 10 C93 10 96 14 96 18 L96 90 C96 95 93 98 88 98 L74 98 C70 98 67 96 65 92 L36 42 L36 90 C36 95 33 98 28 98 L20 98 C15 98 12 95 12 90 L12 18 C12 14 15 10 20 10 Z" },
-  { ch: "T", w: 88, crown: true, d: "M14 12 L84 12 C88 12 91 15 91 19 L91 27 C91 31 88 34 84 34 L56 34 L56 90 C56 95 53 98 48 98 L40 98 C35 98 32 95 32 90 L32 34 L14 34 C10 34 7 31 7 27 L7 19 C7 15 10 12 14 12 Z" },
-  { ch: "O", w: 98, d: "M49 8 C22 8 8 26 8 54 C8 82 22 100 49 100 C76 100 90 82 90 54 C90 26 76 8 49 8 Z M49 32 C61 32 66 41 66 54 C66 67 61 76 49 76 C37 76 32 67 32 54 C32 41 37 32 49 32 Z" },
-  { ch: "R", w: 92, d: "M20 10 L58 10 C74 10 86 19 86 35 C86 46 80 54 70 58 L85 91 C87 95 84 98 79 98 L67 98 C64 98 61 96 59 92 L47 62 L38 62 L38 90 C38 95 35 98 30 98 L20 98 C15 98 12 95 12 90 L12 18 C12 14 15 10 20 10 Z M38 44 L54 44 C61 44 66 41 66 35 C66 29 61 26 54 26 L38 26 Z" },
-  { ch: "A", w: 100, d: "M44 10 L56 10 C60 10 63 12 65 17 L94 90 C96 94 93 98 88 98 L76 98 C72 98 69 95 67 91 L60 72 L40 72 L33 91 C31 95 28 98 24 98 L12 98 C7 98 4 94 6 90 L35 17 C37 12 40 10 44 10 Z M50 36 L43 56 L57 56 Z" }
+const CW: Record<string, number> = { X: 0.72, E: 0.65, N: 0.72, T: 0.68, O: 0.74, R: 0.70, A: 0.72 };
+const HI: Array<Array<{ fx: number; fy: number; fw: number; fh: number; rot: number; o: number }>> = [
+  // X
+  [{ fx: 0.1, fy: 0.08, fw: 0.26, fh: 0.1, rot: 32, o: 0.95 }, { fx: 0.52, fy: 0.08, fw: 0.26, fh: 0.1, rot: -32, o: 0.95 }, { fx: 0.14, fy: 0.6, fw: 0.22, fh: 0.1, rot: -30, o: 0.7 }],
+  // E
+  [{ fx: 0.2, fy: 0.06, fw: 0.32, fh: 0.1, rot: 0, o: 0.95 }, { fx: 0.08, fy: 0.32, fw: 0.12, fh: 0.36, rot: 0, o: 0.75 }, { fx: 0.22, fy: 0.62, fw: 0.28, fh: 0.1, rot: 0, o: 0.65 }],
+  // N
+  [{ fx: 0.08, fy: 0.08, fw: 0.12, fh: 0.38, rot: 0, o: 0.95 }, { fx: 0.62, fy: 0.08, fw: 0.12, fh: 0.38, rot: 0, o: 0.9 }, { fx: 0.32, fy: 0.34, fw: 0.12, fh: 0.26, rot: -28, o: 0.7 }],
+  // T
+  [{ fx: 0.18, fy: 0.05, fw: 0.44, fh: 0.1, rot: 0, o: 0.98 }, { fx: 0.42, fy: 0.36, fw: 0.12, fh: 0.36, rot: 0, o: 0.75 }],
+  // O
+  [{ fx: 0.24, fy: 0.05, fw: 0.34, fh: 0.11, rot: 0, o: 0.98 }, { fx: 0.08, fy: 0.34, fw: 0.12, fh: 0.32, rot: 15, o: 0.8 }, { fx: 0.64, fy: 0.4, fw: 0.1, fh: 0.26, rot: -15, o: 0.6 }],
+  // R
+  [{ fx: 0.24, fy: 0.06, fw: 0.3, fh: 0.1, rot: 0, o: 0.95 }, { fx: 0.08, fy: 0.32, fw: 0.12, fh: 0.36, rot: 0, o: 0.8 }, { fx: 0.54, fy: 0.58, fw: 0.14, fh: 0.26, rot: 25, o: 0.75 }],
+  // A
+  [{ fx: 0.26, fy: 0.05, fw: 0.28, fh: 0.1, rot: 7, o: 0.95 }, { fx: 0.08, fy: 0.42, fw: 0.1, fh: 0.32, rot: 13, o: 0.69 }, { fx: 0.6, fy: 0.45, fw: 0.09, fh: 0.26, rot: -11, o: 0.52 }],
 ];
 
-const HI: Record<number, Array<{ rx: number; ry: number; rw: number; rh: number; o: number; rot: number }>> = {
-  0: [{ rx: 0.32, ry: 0.22, rw: 0.20, rh: 0.38, o: 0.9, rot: -28 }, { rx: 0.68, ry: 0.22, rw: 0.20, rh: 0.38, o: 0.9, rot: 28 }],
-  1: [{ rx: 0.24, ry: 0.25, rw: 0.16, rh: 0.50, o: 0.9, rot: 0 }, { rx: 0.55, ry: 0.18, rw: 0.36, rh: 0.18, o: 0.8, rot: 0 }],
-  2: [{ rx: 0.24, ry: 0.25, rw: 0.18, rh: 0.50, o: 0.9, rot: 0 }, { rx: 0.52, ry: 0.38, rw: 0.20, rh: 0.44, o: 0.85, rot: -26 }],
-  3: [{ rx: 0.50, ry: 0.18, rw: 0.60, rh: 0.18, o: 0.95, rot: 0 }, { rx: 0.50, ry: 0.50, rw: 0.18, rh: 0.38, o: 0.7, rot: 0 }],
-  4: [{ rx: 0.50, ry: 0.18, rw: 0.50, rh: 0.20, o: 0.95, rot: 0 }, { rx: 0.22, ry: 0.45, rw: 0.18, rh: 0.40, o: 0.8, rot: 15 }],
-  5: [{ rx: 0.26, ry: 0.25, rw: 0.16, rh: 0.50, o: 0.9, rot: 0 }, { rx: 0.58, ry: 0.24, rw: 0.32, rh: 0.22, o: 0.9, rot: 0 }],
-  6: [{ rx: 0.42, ry: 0.26, rw: 0.18, rh: 0.38, o: 0.9, rot: -18 }, { rx: 0.58, ry: 0.26, rw: 0.18, rh: 0.38, o: 0.9, rot: 18 }]
-};
+const LETTERS = [
+  { c: "X", rot: -3, sx: 1.0, crown: false },
+  { c: "E", rot: 2, sx: 0.96, crown: false },
+  { c: "N", rot: -2, sx: 1.0, crown: false },
+  { c: "T", rot: 0, sx: 1.0, crown: true },
+  { c: "O", rot: 2, sx: 1.0, crown: false },
+  { c: "R", rot: -2, sx: 0.98, crown: false },
+  { c: "A", rot: 3, sx: 1.0, crown: false },
+];
+const KERN = 0.82;
 
-function Wordmark() {
-  const localH = 108;
-  const GAP = 3;
-  let cxAcc = 0;
+function Wordmark({ charClass }: { charClass?: string }) {
+  const fs = 300;
+  const PAD = fs * 0.2;
+  const wOf = (c: string) => (CW[c] ?? 0.7) * fs;
+  const localH = fs * 1.5;
+  const baseY = fs * 1.12;
+  const dil = fs * 0.05;
+  const font = { fontFamily: "'Bagel Fat One', cursive, system-ui", fontSize: fs } as const;
+
+  let cur = 0;
   const boxes = LETTERS.map((it) => {
-    const x = cxAcc;
-    cxAcc += it.w + GAP;
-    return { ...it, x, h: localH };
+    const ww = wOf(it.c);
+    const box = { ...it, ww, left: cur, localW: ww + 2 * PAD };
+    cur += ww * KERN;
+    return box;
   });
-  const outerW = cxAcc - GAP;
+  const last = boxes[boxes.length - 1]!;
+  const outerW = last.left + last.localW;
 
-  const letterDiv = (b: LetterDef & { x: number; h: number }, i: number) => {
-    const pan = (b.x + b.w / 2) / outerW * 2 - 1;
+  const letterDiv = (b: (typeof boxes)[number], i: number) => {
+    const gx = PAD;
+    const ccx = gx + b.ww / 2, ccy = baseY - fs * 0.36;
+    const glyph = { x: gx, y: baseY, ...font, strokeLinejoin: "round" as const };
+    const hcX = gx - fs * 0.12, hcW = b.ww + fs * 0.24, hcY = baseY - fs * 1.18, hcH = fs * 1.42;
+    const tf = `rotate(${b.rot} ${ccx} ${ccy}) translate(${ccx} 0) scale(${b.sx} 1) translate(${-ccx} 0)`;
+    const divStyle: React.CSSProperties = {
+      position: "absolute",
+      left: `${(b.left / outerW) * 100}%`,
+      top: 0,
+      width: `${(b.localW / outerW) * 100}%`,
+      height: "100%",
+      zIndex: LETTERS.length - i,
+      cursor: "pointer",
+      pointerEvents: "auto",
+    };
+    const bodyStyle: React.CSSProperties = {
+      position: "absolute",
+      inset: 0,
+      transformOrigin: "center bottom",
+      filter: `drop-shadow(0 0 ${fs * 0.012}px rgba(150,142,126,.45)) drop-shadow(${fs * 0.012}px ${fs * 0.03}px ${fs * 0.022}px rgba(45,40,32,.24))`,
+    };
+
     return (
       <div
         key={i}
-        className="wordmarkLetter"
-        data-squish="0.5"
-        onClick={() => playBalloonPop(pan, 0.92 + (i % 3) * 0.08)}
-        onPointerEnter={() => primeBalloonPop()}
-        style={{
-          position: "absolute",
-          left: `${(b.x / outerW) * 100}%`,
-          width: `${(b.w / outerW) * 100}%`,
-          height: "100%",
-          transformStyle: "preserve-3d",
-          cursor: "pointer",
-          pointerEvents: "auto",
-        }}
+        className={charClass || "wordmarkLetter"}
+        data-ci={i}
+        style={divStyle}
+        onClick={() => playBalloonPop(0.9 + (i % 3) * 0.1, 0.4)}
       >
-        <div style={{ position: "relative", width: "100%", height: "100%" }}>
-          <svg
-            viewBox={`0 0 ${b.w} ${b.h}`}
-            style={{ width: "100%", height: "100%", display: "block", overflow: "visible" }}
-            aria-hidden="true"
-          >
-            <path
-              d={b.d}
-              fill="#262016"
-              opacity="0.14"
-              transform="translate(0, 10)"
-              filter="blur(7px)"
-            />
-            <g filter="url(#balloon)">
-              <path
-                d={b.d}
-                fill="url(#pvcGrad)"
-                stroke="#ded7c6"
-                strokeWidth="1.5"
-                style={{
-                  filter: "drop-shadow(0 2px 3px rgba(255,255,255,0.95)) drop-shadow(0 -3px 5px rgba(120,105,80,0.38))",
-                }}
-              />
-              {(HI[i] ?? []).map((hl, k) => {
-                const bw = b.w * hl.rw;
-                const bh = b.h * hl.rh;
-                const cx = b.w * hl.rx;
-                const cy = b.h * hl.ry;
-                return (
-                  <ellipse
-                    key={k}
-                    cx={cx}
-                    cy={cy}
-                    rx={bw / 2}
-                    ry={bh / 2}
-                    fill="#ffffff"
-                    opacity={hl.o}
-                    transform={`rotate(${hl.rot} ${cx} ${cy})`}
-                    filter="blur(1.6px)"
-                  />
-                );
-              })}
-              {(HI[i] ?? []).filter((hl) => hl.o >= 0.6).map((hl, k) => {
-                const bw = b.w * hl.rw;
-                const bh = b.h * hl.rh;
-                const cx = b.w * hl.rx;
-                const cy = b.h * hl.ry;
-                const cw = bw * 0.6, ch = bh * 0.5;
-                return (
-                  <rect
-                    key={k}
-                    x={cx - cw / 2}
-                    y={cy - ch / 2}
-                    width={cw}
-                    height={ch}
-                    rx={Math.min(cw, ch) / 2}
-                    fill="#ffffff"
-                    opacity={hl.o >= 0.9 ? 1 : 0.6}
-                    transform={`rotate(${hl.rot} ${cx} ${cy})`}
-                  />
-                );
-              })}
+        <div className="charBody" style={bodyStyle}>
+          <svg viewBox={`0 0 ${b.localW} ${localH}`} style={{ width: "100%", height: "100%", display: "block", overflow: "visible" }}>
+            <g transform={tf}>
+              <g filter="url(#balloon)">
+                <text {...glyph} fill="url(#latexBase)" stroke="url(#latexBase)" strokeWidth={dil}>{b.c}</text>
+              </g>
+              <mask id={`bm${i}`} maskUnits="userSpaceOnUse" x={-PAD} y={-PAD} width={b.localW + 2 * PAD} height={localH + 2 * PAD}>
+                <text {...glyph} fill="#fff" stroke="#fff" strokeWidth={dil}>{b.c}</text>
+              </mask>
+              <g mask={`url(#bm${i})`} filter="url(#b7)">
+                {(HI[i] ?? []).map((hl, k) => {
+                  const hw = hl.fw * hcW, hh = hl.fh * hcH;
+                  const cx = hcX + hl.fx * hcW + hw / 2, cy = hcY + hl.fy * hcH + hh / 2;
+                  return (
+                    <rect key={k} x={hcX + hl.fx * hcW} y={hcY + hl.fy * hcH} width={hw} height={hh} rx={Math.min(hw, hh) / 2}
+                      fill="#ffffff" opacity={Math.min(1, hl.o * 0.82)} transform={`rotate(${hl.rot} ${cx} ${cy})`} />
+                  );
+                })}
+              </g>
+              <g mask={`url(#bm${i})`} filter="url(#b7tight)">
+                {(HI[i] ?? []).filter((hl) => hl.o >= 0.6).map((hl, k) => {
+                  const bw = hl.fw * hcW, bh = hl.fh * hcH;
+                  const cx = hcX + hl.fx * hcW + bw / 2, cy = hcY + hl.fy * hcH + bh / 2;
+                  const cw = bw * 0.6, ch = bh * 0.5;
+                  return (
+                    <rect key={k} x={cx - cw / 2} y={cy - ch / 2} width={cw} height={ch} rx={Math.min(cw, ch) / 2}
+                      fill="#ffffff" opacity={hl.o >= 0.9 ? 1 : 0.6} transform={`rotate(${hl.rot} ${cx} ${cy})`} />
+                  );
+                })}
+              </g>
             </g>
           </svg>
           {b.crown && <CrownHat />}
@@ -328,17 +389,7 @@ function Wordmark() {
   };
 
   return (
-    <div
-      style={{
-        position: "relative",
-        width: "100%",
-        aspectRatio: `${outerW} / ${localH}`,
-        overflow: "visible",
-        perspective: "1700px",
-      }}
-      role="img"
-      aria-label="XENTORA"
-    >
+    <div style={{ position: "relative", width: "100%", aspectRatio: `${outerW} / ${localH}`, overflow: "visible", perspective: "1700px" }} role="img" aria-label="XENTORA">
       <div className="doorLeft" style={{ position: "absolute", inset: 0, transformOrigin: "left center", transformStyle: "preserve-3d", pointerEvents: "none" }}>
         {boxes.slice(0, 4).map((b, i) => letterDiv(b, i))}
       </div>
@@ -1053,10 +1104,24 @@ function SiteNav({ onOpenMenu }: { onOpenMenu: () => void }) {
 }
 
 /* ================================================================== */
-/*  QUICK COMMAND MENU (⌘K)                                            */
+/*  QUICK COMMAND MENU (⌘K) — AUTHENTIC 2-COLUMN YASHB SPEC           */
 /* ================================================================== */
 
+const FlankMark = ({ side }: { side: "l" | "r" }) => (
+  <svg width="26" height="22" viewBox="0 0 26 22" fill="none" aria-hidden="true" style={side === "r" ? { transform: "scaleX(-1)" } : undefined}>
+    <path d="M4 4 L15 9" stroke={BLUE} strokeWidth="2.6" strokeLinecap="round" />
+    <path d="M1 12 L14 12" stroke={BLUE} strokeWidth="2.6" strokeLinecap="round" />
+    <path d="M4 20 L15 15" stroke={BLUE} strokeWidth="2.6" strokeLinecap="round" />
+  </svg>
+);
+
 function QuickMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (open) panelRef.current?.focus();
+  }, [open]);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -1070,47 +1135,88 @@ function QuickMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  if (!open) return null;
+  const navigateTo = (id: string) => {
+    onClose();
+    if (id === "top") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      const el = document.getElementById(id);
+      if (el) {
+        const top = el.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top, behavior: "smooth" });
+      }
+    }
+  };
+
+  const navItems = [
+    { id: "work", label: "WORKS (37)" },
+    { id: "services", label: "SERVICES" },
+    { id: "about", label: "STUDIO" },
+    { id: "contact", label: "CONTACT" },
+  ];
+
+  const socialLinks = [
+    { label: "Discord: .xentora", href: DISCORD_USER_URL, ext: true },
+    { label: "Join Discord Server", href: DISCORD_SERVER_URL, ext: true },
+    { label: `Email: ${STUDIO_EMAIL}`, href: `mailto:${STUDIO_EMAIL}`, ext: false },
+  ];
 
   return (
-    <div className={`quickMenu${open ? " open" : ""}`} role="dialog" aria-modal="true" aria-label="Site menu" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="quickCard">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
-          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.08em", color: "#6a6253", fontWeight: 700 }}>
-            Navigation &amp; Inquiries
-          </span>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "16px", color: "#6a6253" }}>✕</button>
+    <div
+      className={`quickMenu${open ? " open" : ""}`}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Site menu"
+      aria-hidden={!open}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      {/* Playful Hand-Drawn Corner Doodles */}
+      <svg className="qmSpark qmSpark1" width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <path d="M20 3 C21.6 14 26 18.4 37 20 C26 21.6 21.6 26 20 37 C18.4 26 14 21.6 3 20 C14 18.4 18.4 14 20 3 Z" stroke={BLUE} strokeWidth="2.6" />
+      </svg>
+      <svg className="qmSpark qmSpark2" width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+        <path d="M15 2 C16 10 20 14 28 15 C20 16 16 20 15 28 C14 20 10 16 2 15 C10 14 14 10 15 2 Z" fill={BLUE} />
+      </svg>
+
+      <button className="qmClose" onClick={onClose} aria-label="Close menu">
+        Close <span className="qmEsc">Esc</span>
+      </button>
+
+      <div className="qmInner" ref={panelRef} tabIndex={-1}>
+        {/* Left Column: Primary Giant Typography Navigation */}
+        <div className="qmCol qmPrimary">
+          <div className="qmKicker"><FlankMark side="l" /> NAVIGATE</div>
+          {navItems.map((it, i) => (
+            <button
+              key={it.id}
+              className="qmBig"
+              style={{ fontFamily: "'Bagel Fat One', cursive, system-ui" }}
+              onClick={() => navigateTo(it.id)}
+            >
+              <span className="qmIdx">{String(i + 1).padStart(2, "0")}</span>
+              {it.label}
+              <i className="qmArrow" />
+            </button>
+          ))}
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-          <a className="quickItem" href="#work" onClick={() => { onClose(); document.getElementById("work")?.scrollIntoView({ behavior: "smooth" }); }}>
-            <span>📁 Portfolio Works (37)</span>
-            <kbd>W</kbd>
-          </a>
-          <a className="quickItem" href="#services" onClick={() => { onClose(); document.getElementById("services")?.scrollIntoView({ behavior: "smooth" }); }}>
-            <span>⚡ Services &amp; Capabilities</span>
-            <kbd>S</kbd>
-          </a>
-          <a className="quickItem" href="#about" onClick={() => { onClose(); document.getElementById("about")?.scrollIntoView({ behavior: "smooth" }); }}>
-            <span>🎨 About The Studio</span>
-            <kbd>A</kbd>
-          </a>
-          <a className="quickItem" href="#contact" onClick={() => { onClose(); document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" }); }}>
-            <span>📬 Contact &amp; Pricing</span>
-            <kbd>C</kbd>
-          </a>
-          <a className="quickItem" href={DISCORD_USER_URL} target="_blank" rel="noreferrer" style={{ background: "rgba(88, 101, 242, 0.12)", color: "#5865F2", fontWeight: 700 }}>
-            <span>💬 Message on Discord (.xentora)</span>
-            <ArrowIcon />
-          </a>
-          <a className="quickItem" href={DISCORD_SERVER_URL} target="_blank" rel="noreferrer" style={{ background: "rgba(88, 101, 242, 0.08)", color: "#5865F2" }}>
-            <span>🌐 Join Discord Community Server</span>
-            <ArrowIcon />
-          </a>
-          <a className="quickItem" href={`mailto:${STUDIO_EMAIL}`}>
-            <span>✉️ Email: {STUDIO_EMAIL}</span>
-            <ArrowIcon />
-          </a>
+        {/* Right Column: Connect & Inquiries */}
+        <div className="qmCol qmSecondary">
+          <div className="qmKicker"><FlankMark side="l" /> CONNECT &amp; ORDERS</div>
+          {socialLinks.map((s) => (
+            <a
+              className="qmLink"
+              key={s.label}
+              href={s.href}
+              target={s.ext ? "_blank" : undefined}
+              rel={s.ext ? "noopener noreferrer" : undefined}
+              onClick={onClose}
+            >
+              {s.label}
+              <i className="qmArrow" />
+            </a>
+          ))}
+          <p className="qmNote">Press <kbd>⌘</kbd><kbd>K</kbd> anytime to open this menu.</p>
         </div>
       </div>
     </div>
@@ -1123,45 +1229,110 @@ function QuickMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
 
 function Hero() {
   return (
-    <div className="heroStage" id="top">
+    <div className="stage" id="top">
       <GlobalDefs />
-      <div className="container" style={{ position: "relative", zIndex: 1 }}>
-        {/* Availability status badge */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "18px" }}>
+      <div className="heroLayer">
+        <main
+          style={{
+            position: "relative",
+            minHeight: "92vh",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "clamp(120px, 15vh, 160px) 24px 60px",
+            textAlign: "center",
+          }}
+        >
+          {/* 3D Inflatable Wordmark with Doodles, Crown and Caution Sign */}
           <div
+            className="heroWordmark"
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              padding: "6px 16px",
-              borderRadius: "999px",
-              background: "rgba(255, 255, 255, 0.8)",
-              border: "1px solid rgba(40, 34, 22, 0.15)",
-              boxShadow: "0 6px 16px -6px rgba(45, 40, 32, 0.15)",
-              fontSize: "12px",
-              fontFamily: "Space Mono, monospace",
-              fontWeight: 700,
-              color: "#242018",
+              position: "relative",
+              width: "min(76vw, 880px)",
+              margin: "0 auto 28px",
             }}
           >
-            <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981" }} />
-            <span>Available for Commissions &bull; Fast Delivery</span>
+            {/* Caution Prop leaning on letter X */}
+            <span
+              className="heroPropWrap heroCautionWrap"
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                left: "-5%",
+                top: "-4%",
+                width: "clamp(48px, 6vw, 76px)",
+                zIndex: 4,
+              }}
+            >
+              <img
+                className="heroProp"
+                src={heroCaution}
+                alt=""
+                draggable={false}
+                data-squish="0.9"
+                onClick={() => playBombPop()}
+              />
+            </span>
+
+            {/* Playful Eyebrow Doodle */}
+            <Doodle cls="ixRedraw shakeable" w={66} h={30} style={{ left: "20%", top: "4%", zIndex: 3 }}>
+              <path className="drawPath" d="M4 26 Q33 7 62 22" stroke={INK} strokeWidth="2.6" strokeLinecap="round" />
+              <path className="drawPath" d="M14 28 Q35 17 56 26" stroke={INK} strokeWidth="2.6" strokeLinecap="round" />
+            </Doodle>
+
+            {/* Sparkle Doodle spinning on top-right */}
+            <Doodle cls="ixSpin shakeable" w={44} h={44} style={{ right: "-3%", top: "-10%", zIndex: 4 }}>
+              <path
+                className="drawPath"
+                d="M22 3 C23.5 14 25 18 36 20 C25 22 23.5 26 22 37 C20.5 26 19 22 8 20 C19 18 20.5 14 22 3 Z"
+                stroke={BLUE}
+                strokeWidth="2.8"
+                strokeLinejoin="round"
+              />
+            </Doodle>
+
+            {/* Wordmark Jelly */}
+            <div className="wmJelly" style={{ position: "relative", zIndex: 2 }}>
+              <Wordmark charClass="heroChar" />
+            </div>
           </div>
-        </div>
 
-        {/* 3D Latex Balloon Wordmark */}
-        <div style={{ maxWidth: "860px", margin: "0 auto 24px" }}>
-          <Wordmark />
-        </div>
+          {/* Hero Narrative Copy */}
+          <div className="heroIntro" style={{ maxWidth: "660px", margin: "0 auto 30px" }}>
+            <p className="heroNote" style={{ fontSize: "clamp(19px, 1.8vw, 25px)", lineHeight: 1.45, color: "#2c2823", margin: 0 }}>
+              Boutique creative studio crafting <U color={BLUE}>commercial ad posters</U>, exclusive <U color={ORANGE}>3D chrome logos</U>, and high-impact web &amp; Discord banners.
+              {/* Squeezable Traffic Cone Prop */}
+              <span
+                style={{
+                  display: "inline-block",
+                  verticalAlign: "middle",
+                  marginLeft: "10px",
+                  cursor: "pointer",
+                }}
+              >
+                <img
+                  src={heroCone}
+                  alt="Inflatable Cone"
+                  draggable={false}
+                  data-squish="0.8"
+                  onClick={() => playBombPop()}
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    verticalAlign: "middle",
+                    filter: "drop-shadow(0 6px 12px rgba(60, 40, 20, 0.28))",
+                    transition: "transform 0.15s ease",
+                  }}
+                  onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.82)"; }}
+                  onMouseUp={(e) => { e.currentTarget.style.transform = "none"; }}
+                />
+              </span>
+            </p>
+          </div>
 
-        {/* Hero Narrative Copy */}
-        <div style={{ textAlign: "center", maxWidth: "680px", margin: "0 auto" }}>
-          <p className="heroNote" style={{ fontSize: "clamp(16px, 1.4vw, 20px)", lineHeight: "1.6", color: "#3a3429", marginBottom: "26px" }}>
-            Boutique creative studio crafting <U color={BLUE}>commercial ad posters</U>, exclusive <U color={ORANGE}>3D chrome logos</U>, and high-impact web &amp; Discord banners.
-          </p>
-
-          {/* Action CTAs: Direct Discord + Community */}
-          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", justifyContent: "center", marginBottom: "38px" }}>
+          {/* Action CTAs */}
+          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", justifyContent: "center", marginBottom: "34px" }}>
             <a
               href={DISCORD_USER_URL}
               target="_blank"
@@ -1174,11 +1345,14 @@ function Hero() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "8px",
-                padding: "12px 26px",
-                fontFamily: "Space Mono, monospace",
-                fontSize: "13px",
-                fontWeight: 700,
-                boxShadow: "0 14px 28px -8px rgba(88, 101, 242, 0.45)"
+                padding: "13px 26px",
+                fontFamily: "Inter, sans-serif",
+                fontSize: "14px",
+                fontWeight: 600,
+                textTransform: "none",
+                letterSpacing: "0",
+                boxShadow: "0 14px 28px -8px rgba(88, 101, 242, 0.5)",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
               }}
             >
               <span>Message on Discord (.xentora)</span>
@@ -1197,10 +1371,14 @@ function Hero() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "8px",
-                padding: "12px 24px",
-                fontFamily: "Space Mono, monospace",
-                fontSize: "13px",
-                fontWeight: 700
+                padding: "13px 24px",
+                fontFamily: "Inter, sans-serif",
+                fontSize: "14px",
+                fontWeight: 600,
+                textTransform: "none",
+                letterSpacing: "0",
+                boxShadow: "0 8px 18px -6px rgba(45,40,32,0.12)",
+                transition: "transform 0.2s ease, background 0.2s ease",
               }}
             >
               <span>Join Discord Server</span>
@@ -1216,68 +1394,57 @@ function Hero() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "8px",
-                padding: "12px 24px",
-                fontFamily: "Space Mono, monospace",
-                fontSize: "13px",
-                fontWeight: 700
+                padding: "13px 24px",
+                fontFamily: "Inter, sans-serif",
+                fontSize: "14px",
+                fontWeight: 600,
+                textTransform: "none",
+                letterSpacing: "0",
+                transition: "transform 0.2s ease",
               }}
               onClick={(e) => {
                 e.preventDefault();
                 document.getElementById("work")?.scrollIntoView({ behavior: "smooth" });
               }}
             >
-              <span>Browse Portfolio ↓</span>
+              <span>Browse Works ↓</span>
             </a>
           </div>
 
-          {/* Modernized Studio Metric Highlights Bar (Image 3 fix) */}
+          {/* Modernized Studio Metric Highlights Bar */}
           <div
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
-              gap: "12px",
+              gap: "14px",
               background: "radial-gradient(120% 110% at 38% 12%, #fefdf9 0%, #f4eee2 55%, #dfd5c2 100%)",
               borderRadius: "24px",
-              padding: "16px 20px",
+              padding: "18px 24px",
               border: "1.5px solid rgba(255, 255, 255, 0.8)",
               boxShadow: "0 18px 36px -16px rgba(45, 40, 32, 0.28), inset 0 2px 4px #ffffff",
               maxWidth: "720px",
-              margin: "0 auto 18px",
+              width: "100%",
+              margin: "0 auto",
             }}
           >
             <div style={{ textAlign: "center", padding: "6px" }}>
-              <div style={{ fontFamily: "Space Mono, monospace", fontSize: "18px", fontWeight: 800, color: BLUE }}>24–48h</div>
+              <div style={{ fontFamily: "Space Mono, monospace", fontSize: "19px", fontWeight: 800, color: BLUE }}>24–48h</div>
               <div style={{ fontSize: "11px", color: "#6e6657", fontFamily: "Space Mono, monospace", fontWeight: 600 }}>Fast Turnaround</div>
             </div>
             <div style={{ textAlign: "center", padding: "6px" }}>
-              <div style={{ fontFamily: "Space Mono, monospace", fontSize: "18px", fontWeight: 800, color: ORANGE }}>37+</div>
+              <div style={{ fontFamily: "Space Mono, monospace", fontSize: "19px", fontWeight: 800, color: ORANGE }}>37+</div>
               <div style={{ fontSize: "11px", color: "#6e6657", fontFamily: "Space Mono, monospace", fontWeight: 600 }}>Crafted Designs</div>
             </div>
             <div style={{ textAlign: "center", padding: "6px" }}>
-              <div style={{ fontFamily: "Space Mono, monospace", fontSize: "18px", fontWeight: 800, color: "#10b981" }}>100%</div>
+              <div style={{ fontFamily: "Space Mono, monospace", fontSize: "19px", fontWeight: 800, color: "#10b981" }}>100%</div>
               <div style={{ fontSize: "11px", color: "#6e6657", fontFamily: "Space Mono, monospace", fontWeight: 600 }}>Client Satisfaction</div>
             </div>
             <div style={{ textAlign: "center", padding: "6px" }}>
-              <div style={{ fontFamily: "Space Mono, monospace", fontSize: "18px", fontWeight: 800, color: "#8b5cf6" }}>Layered</div>
+              <div style={{ fontFamily: "Space Mono, monospace", fontSize: "19px", fontWeight: 800, color: "#8b5cf6" }}>Layered</div>
               <div style={{ fontSize: "11px", color: "#6e6657", fontFamily: "Space Mono, monospace", fontWeight: 600 }}>PSD &amp; Ultra-HD PNG</div>
             </div>
           </div>
-
-          {/* Interactive Inflatable Prop from YashB */}
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", marginTop: "10px" }}>
-            <span style={{ fontSize: "11px", fontFamily: "Space Mono, monospace", color: "#8a8170" }}>
-              Squeezable Studio Prop &rarr;
-            </span>
-            <img
-              src={heroCone}
-              alt="Inflatable Cone"
-              draggable={false}
-              data-squish="0.8"
-              onClick={() => playBombPop()}
-              style={{ width: "32px", height: "32px", cursor: "pointer", verticalAlign: "middle" }}
-            />
-          </div>
-        </div>
+        </main>
       </div>
     </div>
   );
