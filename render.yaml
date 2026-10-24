@@ -1,0 +1,12 @@
+services:
+  # Deploy as a Free Static Site on Render
+  - type: web
+    name: xentora-portfolio
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    pullRequestPreviewsEnabled: false
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=3600
