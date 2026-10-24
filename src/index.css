@@ -167,3 +167,9 @@
     transform: translate(var(--tx, 0px), var(--ty, -24px)) scale(0);
   }
 }
+
+@media (max-width: 920px) {
+  .showDesk {
+    display: none !important;
+  }
+}
