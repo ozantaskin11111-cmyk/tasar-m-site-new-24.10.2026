@@ -34,5 +34,13 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Automatic detection: if served directly from repository root on production instead of dist
+      if (typeof window !== 'undefined' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        if (document.querySelector('script[src*="main.tsx"]')) {
+          location.replace('/dist/' + location.search + location.hash);
+        }
+      }
+    </script>
   </body>
 </html>
