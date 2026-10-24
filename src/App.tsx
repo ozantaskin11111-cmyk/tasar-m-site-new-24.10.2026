@@ -348,6 +348,7 @@ function Wordmark({ charClass }: { charClass?: string }) {
         className={charClass || "wordmarkLetter"}
         data-ci={i}
         style={divStyle}
+        onMouseEnter={() => primeBalloonPop()}
         onClick={() => playBalloonPop(0.9 + (i % 3) * 0.1, 0.4)}
       >
         <div className="charBody" style={bodyStyle}>
@@ -1083,12 +1084,13 @@ function SiteNav({ onOpenMenu }: { onOpenMenu: () => void }) {
             <span className="kbdHint"><kbd>⌘</kbd><kbd>K</kbd></span>
           </button>
           <a
-            className="navTalk showDesk"
+            className="navTalk showDesk shineBtn"
             href={DISCORD_USER_URL}
             target="_blank"
             rel="noreferrer"
-            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+            style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
           >
+            <span className="beaconDot" />
             <span>Order Design</span>
             <ArrowIcon />
           </a>
@@ -1337,7 +1339,7 @@ function Hero() {
               href={DISCORD_USER_URL}
               target="_blank"
               rel="noreferrer"
-              className="heroBtn"
+              className="heroBtn shineBtn"
               style={{
                 background: "#5865F2",
                 color: "#ffffff",
@@ -1427,19 +1429,19 @@ function Hero() {
               margin: "0 auto",
             }}
           >
-            <div style={{ textAlign: "center", padding: "6px" }}>
+            <div className="metricPill" style={{ textAlign: "center", padding: "8px 6px", borderRadius: "16px" }}>
               <div style={{ fontFamily: "Space Mono, monospace", fontSize: "19px", fontWeight: 800, color: BLUE }}>24–48h</div>
               <div style={{ fontSize: "11px", color: "#6e6657", fontFamily: "Space Mono, monospace", fontWeight: 600 }}>Fast Turnaround</div>
             </div>
-            <div style={{ textAlign: "center", padding: "6px" }}>
+            <div className="metricPill" style={{ textAlign: "center", padding: "8px 6px", borderRadius: "16px" }}>
               <div style={{ fontFamily: "Space Mono, monospace", fontSize: "19px", fontWeight: 800, color: ORANGE }}>37+</div>
               <div style={{ fontSize: "11px", color: "#6e6657", fontFamily: "Space Mono, monospace", fontWeight: 600 }}>Crafted Designs</div>
             </div>
-            <div style={{ textAlign: "center", padding: "6px" }}>
+            <div className="metricPill" style={{ textAlign: "center", padding: "8px 6px", borderRadius: "16px" }}>
               <div style={{ fontFamily: "Space Mono, monospace", fontSize: "19px", fontWeight: 800, color: "#10b981" }}>100%</div>
               <div style={{ fontSize: "11px", color: "#6e6657", fontFamily: "Space Mono, monospace", fontWeight: 600 }}>Client Satisfaction</div>
             </div>
-            <div style={{ textAlign: "center", padding: "6px" }}>
+            <div className="metricPill" style={{ textAlign: "center", padding: "8px 6px", borderRadius: "16px" }}>
               <div style={{ fontFamily: "Space Mono, monospace", fontSize: "19px", fontWeight: 800, color: "#8b5cf6" }}>Layered</div>
               <div style={{ fontSize: "11px", color: "#6e6657", fontFamily: "Space Mono, monospace", fontWeight: 600 }}>PSD &amp; Ultra-HD PNG</div>
             </div>
@@ -1638,6 +1640,7 @@ function WorkPage({ onItemClick }: { onItemClick: (item: GalleryItem) => void })
                     ref={reveal}
                     style={{
                       ...rvDelay((idx % 6) * 50),
+                      animationDelay: `${(idx % 8) * 45}ms`,
                       background: "radial-gradient(120% 110% at 36% 12%, #fefdf9 0%, #f4efe5 52%, #e2d9c7 100%)",
                       borderRadius: "26px",
                       padding: "12px 12px 14px",
@@ -1648,7 +1651,7 @@ function WorkPage({ onItemClick }: { onItemClick: (item: GalleryItem) => void })
                       cursor: "pointer",
                       transition: "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease",
                     }}
-                    className="projCard isLink"
+                    className="projCard isLink galleryCardAnim"
                     onClick={() => onItemClick(item)}
                   >
                     {/* Media Container matching exact aspect ratio with zero black bars */}
@@ -1680,6 +1683,7 @@ function WorkPage({ onItemClick }: { onItemClick: (item: GalleryItem) => void })
                         className="hoverZoom"
                       />
                       <span
+                        className="liveBadge"
                         style={{
                           position: "absolute",
                           top: "10px",
@@ -2097,7 +2101,8 @@ function Lightbox({ item, onClose }: { item: GalleryItem; onClose: () => void })
           display: "flex",
           flexDirection: "column",
           border: "1px solid rgba(255,255,255,0.15)",
-          boxShadow: "0 40px 90px rgba(0,0,0,0.85)"
+          boxShadow: "0 40px 90px rgba(0,0,0,0.85)",
+          animation: "cardPopIn 0.3s cubic-bezier(0.22, 1, 0.36, 1)"
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -2204,6 +2209,28 @@ export default function App() {
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
+
+    const handleSparkle = (e: MouseEvent) => {
+      const colors = ["#4b63ff", "#ff7a00", "#10b981", "#ffd166", "#8b5cf6"];
+      for (let i = 0; i < 5; i++) {
+        const p = document.createElement("div");
+        p.className = "clickSparkle";
+        const size = Math.floor(Math.random() * 6) + 5;
+        p.style.width = `${size}px`;
+        p.style.height = `${size}px`;
+        p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        p.style.left = `${e.clientX - size / 2}px`;
+        p.style.top = `${e.clientY - size / 2}px`;
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * 38 + 14;
+        p.style.setProperty("--tx", `${Math.cos(angle) * dist}px`);
+        p.style.setProperty("--ty", `${Math.sin(angle) * dist}px`);
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 650);
+      }
+    };
+    window.addEventListener("pointerdown", handleSparkle);
+    return () => window.removeEventListener("pointerdown", handleSparkle);
   }, []);
 
   return (
